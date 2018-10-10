@@ -7,13 +7,12 @@ from .pagination import Paginator
 
 DEFAULT_URL = "https://fpdc.fedoraproject.org/"
 
-# Cache the server instance.
-_server = None
+# Cache the server instance for convenience.
+_SERVER = None
 
 
-def _check_server():
-    global _server
-    if _server is not None:
+def _check_server(server):
+    if server is not None:
         return
     raise RuntimeError(
         "You must first create an instance of FPDC and call the connect() method."
@@ -27,9 +26,9 @@ class FPDC:
         self.schema = None
 
     def connect(self):
-        global _server
+        global _SERVER
         self.schema = self.client.get("http://localhost:8000/")
-        _server = self
+        _SERVER = self
 
 
 class APIObject(MutableMapping):
@@ -37,9 +36,10 @@ class APIObject(MutableMapping):
     api_endpoint = None
     api_id = None
 
-    def __init__(self, data):
+    def __init__(self, data, server=None):
         if self.api_endpoint is None or self.api_id is None:
             raise NotImplementedError
+        self._server = server or _SERVER
         self.data = data
 
     def __repr__(self):
@@ -51,44 +51,48 @@ class APIObject(MutableMapping):
         return str(dict(self.data))
 
     @classmethod
-    def all(cls, page=1):
-        _check_server()
+    def all(cls, server=None):
+        server = server or _SERVER
+        _check_server(server)
+        page = 1
         paginator = Paginator()
         while paginator.results_left:
-            result = _server.client.action(
-                _server.schema, [cls.api_endpoint, "list"], params={"page": page}
+            result = server.client.action(
+                server.schema, [cls.api_endpoint, "list"], params={"page": page}
             )
             paginator.read_results(result)
-            yield from [cls(data=data) for data in result["results"]]
+            yield from [cls(data=data, server=server) for data in result["results"]]
             page = page + 1
 
     @classmethod
-    def read(cls, **kwargs):
-        _check_server()
-        result = _server.client.action(
-            _server.schema, [cls.api_endpoint, "read"], params=kwargs
+    def read(cls, params, server=None):
+        server = server or _SERVER
+        _check_server(server)
+        result = server.client.action(
+            server.schema, [cls.api_endpoint, "read"], params=params
         )
-        return cls(data=result)
+        return cls(data=result, server=server)
 
     @classmethod
-    def create(cls, data):
-        _check_server()
-        result = _server.client.action(
-            _server.schema, [cls.api_endpoint, "create"], params=data
+    def create(cls, data, server=None):
+        server = server or _SERVER
+        _check_server(server)
+        result = server.client.action(
+            server.schema, [cls.api_endpoint, "create"], params=data
         )
-        return cls(data=result)
+        return cls(data=result, server=server)
 
     def save(self):
-        _check_server()
-        result = _server.client.action(
-            _server.schema, [self.api_endpoint, "update"], params=dict(self.data)
+        _check_server(self._server)
+        result = self._server.client.action(
+            self._server.schema, [self.api_endpoint, "update"], params=dict(self.data)
         )
         self.data = result
 
     def delete(self):
-        _check_server()
-        _server.client.action(
-            _server.schema,
+        _check_server(self._server)
+        self._server.client.action(
+            self._server.schema,
             [self.api_endpoint, "delete"],
             params={"id": self.data["id"]},
         )

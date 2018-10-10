@@ -44,7 +44,7 @@ You can retrieve all the releases from the server with:
 
 You can retrieve a single release with:
 
->>> release = Release.read(release_id="fedora-28")
+>>> release = Release.read({"release_id": "fedora-28"})
 
 You can access the release's properties as a dict:
 
