@@ -1,0 +1,9 @@
+#python + virtual environment
+.venv
+__pycache__
+.coverage
+.pytest_cache
+.tox
+
+#VS Code
+.vscode
