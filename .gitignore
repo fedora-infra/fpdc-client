@@ -1,9 +1,12 @@
-#python + virtual environment
+# python + virtual environment
 .venv
 __pycache__
 .coverage
 .pytest_cache
 .tox
 
-#VS Code
+# VS Code
 .vscode
+
+# Sphinx documentation
+docs/_build/
