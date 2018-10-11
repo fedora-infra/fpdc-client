@@ -76,6 +76,6 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=get_requirements(),
-    tests_require=get_requirements(requirements_file="dev-requirements.txt"),
+    tests_require=get_requirements(requirements_file="requirements-dev.txt"),
     # test_suite="fpdc_client.tests",
 )
