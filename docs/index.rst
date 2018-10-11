@@ -13,8 +13,10 @@ This package provides an API to interact with `FPDC`_. It is based on
 
 .. toctree::
    :maxdepth: 2
+   :caption: Documentation contents:
 
    userguide
+   api
 
 
 This package is licensed under the GNU General Public License v3 or later

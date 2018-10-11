@@ -15,6 +15,13 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+"""This module is where client code can import objects.
+
+Attributes:
+    FPDC: the :py:class:`FPDC` server class to instanciate first.
+    Release: the :py:class:`release <Release>` REST endpoint.
+"""
+
 from .base import FPDC  # noqa:F401
 from .endpoints import Release  # noqa:F401
 
