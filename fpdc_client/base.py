@@ -2,10 +2,13 @@
 This module contains the base classes that will be built upon to access API endpoints.
 """
 
+import json
 from collections.abc import MutableMapping
 
 import coreapi
+import requests
 
+from .auth import FedoraOIDCAdapter
 from .pagination import Paginator
 
 
@@ -26,14 +29,35 @@ def _check_server(server):
 class FPDC:
     """Main class handling the connection to an FPDC server.
 
+    Attributes:
+        app_id (str): The OpenID Connect application name. You may change it by
+            subclassing or right after instanciation. It needs to be a valid
+            linux filename, without slashes.
+
     Args:
         url (str, optional): The URL of the FPDC server.
     """
 
+    app_id = "fpdc-client"
+
     def __init__(self, url=DEFAULT_URL):
         self.url = url
-        self.client = coreapi.Client()
         self.schema = None
+        self.client = coreapi.Client()
+
+    def login(self, auth_file):
+        with open(auth_file) as f:
+            auth_config = json.load(f)
+        # Recreate the client with the proper transport
+        session = requests.Session()
+        adapter = FedoraOIDCAdapter(self.app_id, auth_config["web"])
+        session.mount(self.url, adapter)
+        self.client = coreapi.Client(
+            transports=[coreapi.transports.HTTPTransport(session=session)]
+        )
+        if self.schema is not None:
+            # Reconnect, the schema may contain more actions now.
+            self.connect()
 
     def connect(self):
         """Connect to the FPDC server and retrieve the REST schema.
@@ -41,7 +65,7 @@ class FPDC:
         This method must be called before any other operation is possible.
         """
         global _SERVER
-        self.schema = self.client.get("http://localhost:8000/")
+        self.schema = self.client.get(self.url)
         _SERVER = self
 
 

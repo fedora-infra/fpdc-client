@@ -15,6 +15,30 @@ Now connect to the server. This will fetch the available actions from FPDC:
 >>> server.connect()
 
 
+Authentication
+--------------
+
+The Fedora servers use OIDC to authenticate, you need to get a ``client_id``
+and a corresponding secret from the OIDC server.
+
+During development, you can use dynamic registration on the development OIDC
+server with the following command::
+
+   pip install oidc-register
+   oidc-register https://iddev.fedorainfracloud.org/openidc/ http://localhost:12345/ http://localhost:23456/
+
+This will produce a ``client_secrets.json`` file. Then you can call the
+:py:meth:`login` method passing it the path to this file::
+
+>>> server.login(auth_file="client_secrets.json")
+
+The first time, it will open a browser window on the OIDC provider, asking you
+to login and to consent to the transmission of your personal information.
+
+After this step, you can close the browser window, your client is
+authenticated.
+
+
 Getting data
 ------------
 
