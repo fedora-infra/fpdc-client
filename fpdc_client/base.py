@@ -12,7 +12,8 @@ from .auth import FedoraOIDCAdapter
 from .pagination import Paginator
 
 
-DEFAULT_URL = "https://fpdc.fedoraproject.org/"
+PROD_URL = "https://fpdc.fedoraproject.org/"
+STG_URL = "https://fpdc.stg.fedoraproject.org/"
 
 # Cache the server instance for convenience.
 _SERVER = None
@@ -40,17 +41,36 @@ class FPDC:
 
     app_id = "fpdc-client"
 
-    def __init__(self, url=DEFAULT_URL):
+    def __init__(self, url=PROD_URL):
         self.url = url
         self.schema = None
         self.client = coreapi.Client()
+        self.client_id = "fpdc-client"
+        self.client_secret = "notsecret"
+        if self.url is PROD_URL:
+            self.issuer = "https://id.fedoraproject.org/openidc/"
+        elif self.url is STG_URL:
+            self.issuer = "https://id.stg.fedoraproject.org/openidc/"
+        else:
+            self.issuer = None
 
-    def login(self, auth_file):
-        with open(auth_file) as f:
-            auth_config = json.load(f)
+    def login(self, auth_file=None):
+
+        if auth_file is not None:
+            with open(auth_file) as f:
+                auth_config = json.load(f)["web"]
+                self.client_id = auth_config["client_id"]
+                self.client_secret = auth_config["client_secret"]
+                self.issuer = auth_config["issuer"]
+
+        if self.issuer is None:
+            raise RuntimeError("You must provide a client secrets files to login")
+
         # Recreate the client with the proper transport
         session = requests.Session()
-        adapter = FedoraOIDCAdapter(self.app_id, auth_config["web"])
+        adapter = FedoraOIDCAdapter(
+            self.app_id, self.client_id, self.client_secret, self.issuer
+        )
         session.mount(self.url, adapter)
         self.client = coreapi.Client(
             transports=[coreapi.transports.HTTPTransport(session=session)]

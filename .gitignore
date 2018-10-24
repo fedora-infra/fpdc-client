@@ -5,6 +5,9 @@ __pycache__
 .pytest_cache
 .tox
 *.egg-info
+build
+dist
+*.pyc
 
 # VS Code
 .vscode
