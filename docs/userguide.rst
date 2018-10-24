@@ -10,6 +10,11 @@ necessary:
 >>> from fpdc_client import FPDC
 >>> server = FPDC(url="http://localhost:8000/")
 
+.. note::
+
+    By default the FPDC client will connect to the production server.
+    You can use the STG_URL global variable to connect to the staging server.
+
 Now connect to the server. This will fetch the available actions from FPDC:
 
 >>> server.connect()
@@ -20,6 +25,11 @@ Authentication
 
 The Fedora servers use OIDC to authenticate, you need to get a ``client_id``
 and a corresponding secret from the OIDC server.
+
+.. note::
+
+    If you are using the production or staging instance of FPDC the client_id and
+    client_secret are automatically provided.
 
 During development, you can use dynamic registration on the development OIDC
 server with the following command::

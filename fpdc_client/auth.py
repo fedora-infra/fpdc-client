@@ -28,7 +28,9 @@ class FedoraOIDCAdapter(HTTPAdapter):
         app_id (str): The OpenID Connect application name. You may change it by
             subclassing or right after instanciation. It needs to be a valid
             linux filename, without slashes.
-        config (dict): The client configuration as obtained during registration.
+        client_id (str): The client ID provided by the ID provider service
+        client_secret (str): The client secret provided by the ID provider service
+        id_provider (str): URI of the ID provider
     """
 
     _scopes = [
@@ -38,12 +40,10 @@ class FedoraOIDCAdapter(HTTPAdapter):
         "https://fpdc.fedoraproject.org/oidc/create-release",
     ]
 
-    def __init__(self, app_id, config):
+    def __init__(self, app_id, client_id, client_secret, id_provider):
         super().__init__()
-        id_provider = config["issuer"]
-        client_id = config["client_id"]
         self._oidc_client = OpenIDCBaseClient(
-            app_id, id_provider, client_id, client_secret=config["client_secret"]
+            app_id, id_provider, client_id, client_secret
         )
 
     def send(self, request, **kwargs):
