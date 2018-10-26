@@ -36,6 +36,7 @@ class FedoraOIDCAdapter(HTTPAdapter):
         "profile",
         "email",
         "https://fpdc.fedoraproject.org/oidc/create-release",
+        "https://id.fedoraproject.org/scope/groups",
     ]
 
     def __init__(self, app_id, config):
