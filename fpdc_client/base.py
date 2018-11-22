@@ -10,6 +10,7 @@ import requests
 
 from .auth import FedoraOIDCAdapter
 from .pagination import Paginator
+from .execptions import PermissionDenied
 
 
 PROD_URL = "https://fpdc.fedoraproject.org/"
@@ -188,9 +189,13 @@ class APIObject(MutableMapping):
 
         server = server or _SERVER
         _check_server(server)
-        result = server.client.action(
-            server.schema, [cls.api_endpoint, "create"], params=data
-        )
+        try:
+            result = server.client.action(
+                server.schema, [cls.api_endpoint, "create"], params=data
+            )
+        except coreapi.exceptions.LinkLookupError:
+            raise PermissionDenied(f"You are not allowed to create a {cls.api_endpoint}")
+
         return cls(data=result, server=server)
 
     def save(self):
@@ -201,9 +206,13 @@ class APIObject(MutableMapping):
         """
 
         _check_server(self._server)
-        result = self._server.client.action(
-            self._server.schema, [self.api_endpoint, "update"], params=dict(self.data)
-        )
+        try:
+            result = self._server.client.action(
+                self._server.schema, [self.api_endpoint, "update"], params=dict(self.data)
+            )
+        except coreapi.exceptions.LinkLookupError:
+            raise PermissionDenied(f"You are not allowed to save a {self.api_endpoint}")
+
         self.data = result
 
     def delete(self):
@@ -211,11 +220,14 @@ class APIObject(MutableMapping):
         """
 
         _check_server(self._server)
-        self._server.client.action(
-            self._server.schema,
-            [self.api_endpoint, "delete"],
-            params={"id": self.data["id"]},  # Should we use self.api_id?
-        )
+        try:
+            self._server.client.action(
+                self._server.schema,
+                [self.api_endpoint, "delete"],
+                params={"id": self.data["id"]},  # Should we use self.api_id?
+            )
+        except coreapi.exceptions.LinkLookupError:
+            raise PermissionDenied(f"You are not allowed to delete a {self.api_endpoint}")
         # Make sure the instance is unusable now.
         self.data = None
 
