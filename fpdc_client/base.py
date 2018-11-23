@@ -10,7 +10,7 @@ import requests
 
 from .auth import FedoraOIDCAdapter
 from .pagination import Paginator
-from .execptions import PermissionDenied
+from .exceptions import PermissionDenied
 
 
 PROD_URL = "https://fpdc.fedoraproject.org/"
