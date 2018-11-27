@@ -1,2 +1,2 @@
 coreapi
-python-fedora
+git+https://github.com/fedora-infra/python-fedora@9bfb521069550e4502951f58d599a6852b12c0e1
